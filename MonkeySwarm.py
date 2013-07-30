@@ -9,13 +9,13 @@ os.system("rm REPORTS")
 os.system("mkdir REPORTS")
 
 # Number of repeats?
-loop = 90
+loop = 10
 
 
 
 #Functions
 def rotate():
-  MonkeyRunner.sleep(2)
+	MonkeyRunner.sleep(2)
 	os.system("/scratch/xautomation-1.07/xte \"keydown Control_L\"")
 	os.system("/scratch/xautomation-1.07/xte \"keydown F12\"")
 	MonkeyRunner.sleep(1)
@@ -64,19 +64,26 @@ def checkpos():
 		f.close()
 
 
+def toString(x):
+  str = ''
+  for i in x:
+     str += i
+  return str
+
+
 
 #Main
 print "Waiting for device"
 device = MonkeyRunner.waitForConnection(5000,"emulator-5554")
-print "Connected!"
+print "Connected"
 
 count = 0
 while (count < loop):
-
-
+	os.system("clear")
+	print "Current test: ",count 
 	# 1 Checks if device is operatable
 	MonkeyRunner.sleep(4)
-
+	
 	numb = 0
 	while numb < 1:
 
@@ -86,12 +93,13 @@ while (count < loop):
 		if MonkeyImage.sameAs(icon, checkicon, 0.5):
 			# 2 Opens App
 			print "Opening app"
-			device.touch(100, 300, 'DOWN_AND_UP')
-			MonkeyRunner.sleep(4)
+			device.touch(110,236, 'DOWN_AND_UP')
+
+			MonkeyRunner.sleep(6)
 			numb = numb + 2
 		else:
 			#2 If can't open app, sleeps
-			print "Can't see app, sleeping"
+			print "Waiting for device"
 			MonkeyRunner.sleep(5)
 			numb = 0
 
@@ -116,23 +124,13 @@ while (count < loop):
 
 	# 5 Chooses action
 
-	actionchoice = ['trackball','syskeys','normal']
-	monkey = random.choice(actionchoice)
-	
-	if monkey == 'normal':
-		print "Not excluding any actions"
-		os.system("adb -e shell monkey -p org.mozilla.fennec -v  500 > REPORTS/Test"+`count`+".txt")
-	
-	if monkey == 'syskeys':
-		print "Not using syskeys"
-		os.system("adb -e shell monkey -p org.mozilla.fennec --pct-syskeys 1 -v  500 > REPORTS/Test"+`count`+".txt")
-		
-	if monkey == 'trackball':
-		print "Not using trackball"
-		os.system("adb -e shell monkey -p org.mozilla.fennec --pct-trackball 1 -v  500 > REPORTS/Test"+`count`+".txt")
+	actionchoice = [' ', ' --pct-touch 1',' --pct-trackball 1',' --pct-nav 1',' --pct-majornav 1',' --pct-syskeys 1',' --pct-appswitch 1',' --pct-anyevent 1']
 
+	exclude = filter( lambda x: random.randint(0,1) == 0, actionchoice)
+ 
+	print "We are excludingL:", exclude
+	os.system("adb -e shell monkey -p org.mozilla.fennec "+ toString(exclude) + " -v  500 ")
 
-	
 
 	
 
@@ -143,21 +141,20 @@ while (count < loop):
 	checkpos()
 
 	# 6 Clears text
-	print "Clearing terminal txt"
+	print "Test: ", count," completed."
 	MonkeyRunner.sleep(5)
 	count = count + 1
-	os.system("clear")	
+		
 	
 	
 	# 7 Restarts emulator
-	print "Stopping Emulator"
+	print "Restarting..."
 	device.shell('stop');
 	MonkeyRunner.sleep(2)	
-	print "Starting Emulator"
 	device.shell('start');
 	MonkeyRunner.sleep(5)
 	numb = numb - 2
-
+	
 	
 print "end"
 
